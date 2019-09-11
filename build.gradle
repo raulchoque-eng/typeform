@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'findbugs'
+    id 'checkstyle'
+}
+
+group 'AT-10'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+test {
+    useTestNG()
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testImplementation
+    }
+}
+
+task cucumber() {
+    dependsOn assemble, compileTestJava
+    doLast {
+        javaexec {
+                main = "cucumber.api.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = ['--plugin', 'pretty', '--glue', 'website/steps', 'src/test/resources']
+        }
+    }
+}
+
+dependencies {
+
+//    // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
+    compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
+//    // https://mvnrepository.com/artifact/io.github.bonigarcia/webdrivermanager
+    compile group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '3.6.2'
+    testCompile group: 'info.cukes', name: 'cucumber-java', version: '1.2.5'
+    testCompile group: 'info.cukes', name: 'cucumber-testng', version: '1.2.5'
+    compile 'org.hamcrest:hamcrest:2.1'
+}
+
+checkstyle {
+    toolVersion = '8.1'
+}
+
+findbugs {
+    toolVersion = '3.0.1'
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
